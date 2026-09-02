@@ -1,0 +1,6 @@
+#chr	start	end	ref	alt
+chr1	100	100	-	A
+chr1	100	102	G	-
+chr1	100	100	0	T
+chr1	100	101	A	T
+chr2	200	205	ACTG	T
