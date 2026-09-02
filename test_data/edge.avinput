@@ -1,0 +1,6 @@
+#chr	start	end	ref	alt
+chr1	50	50	0	A
+chr2	100	100	-	t
+chr3	200	200	G
+chr4	300	300	N	T
+chr5	400	400	A	-
