@@ -8,12 +8,14 @@ value as a new column at the end of _multianno.txt.
 import sys
 import argparse
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional, Tuple
+
+_Key = Tuple[str, str, str, str, str]
 
 
-def load_avinput(avinput_path: str) -> dict[tuple[str, str, str, str, str], str]:
+def load_avinput(avinput_path: str) -> Dict[_Key, str]:
     """Load .avinput and return a dict keyed by (chr,start,end,ref,alt) -> transvar.input."""
-    lookup: dict[tuple[str, str, str, str, str], str] = {}
+    lookup: Dict[_Key, str] = {}
     for line in Path(avinput_path).read_text().splitlines():
         stripped = line.rstrip()
         if not stripped or stripped.startswith("#"):
@@ -66,7 +68,8 @@ def process(
             # This is likely the column header line
             fields = stripped.split("\t")
             # Detect if this looks like a multianno header
-            if "Chr" in fields or "chr" in fields or fields[0].lower().startswith("chr"):
+            first = fields[0].lstrip("#").strip()
+            if first == "Chr" or first.lower() == "chr":
                 out_lines.append(f"{stripped}\ttransvar.input")
                 header_added = True
             else:
