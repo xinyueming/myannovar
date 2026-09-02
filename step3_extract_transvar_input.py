@@ -8,7 +8,7 @@ deduplicates, and writes a clean transvar.input file for TransVar annotation.
 import sys
 import argparse
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Set
 
 
 def process(input_path: str, output_path: Optional[str] = None) -> None:
@@ -23,7 +23,7 @@ def process(input_path: str, output_path: Optional[str] = None) -> None:
 
     lines = Path(input_path).read_text().splitlines()
     tv_col: Optional[int] = None
-    values: set[str] = set()
+    values: Set[str] = set()
 
     for line in lines:
         stripped = line.rstrip()
