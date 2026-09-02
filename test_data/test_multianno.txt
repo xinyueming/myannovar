@@ -1,0 +1,5 @@
+# Chr	Start	End	Ref	Alt	Func.refGene	Gene.refGene	Otherinfo
+chr1	100	100	-	A	exonic	TP53	sample1;info1
+chr1	100	102	G	-	intergenic	-	sample2;info2
+chr2	500	500	C	T	exonic	BRCA1	sample3;info3
+chr1	100	101	A	T	exonic	EGFR	sample4;info4

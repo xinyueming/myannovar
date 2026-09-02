@@ -1,0 +1,4 @@
+#chr	start	end	ref	alt	transvar.input
+chr1	100	100	-	A	chr1:g.100_100insA
+chr1	100	102	G	-	chr1:g.100_102del
+chr1	100	101	A	T	chr1:g.100_101delinsT
