@@ -1,0 +1,4 @@
+# Chr	Start	End	Ref	Alt	Func.refGene	Gene.refGene	AAChange.transvar	transvar.input
+chr3	178936091	178936091	G	A	exonic	PIK3CA	PIK3CA:NM_006218.2:exon10:c.1633G>A:p.E545K	chr3:g.178936091_178936091delinsA
+chr1	100	100	-	A	exonic	BRCA1	BRCA1:NM_001234.5:exon2:c.100_101insA:p.X100X	chr1:g.100_100insA
+chr2	500	502	AGT	-	exonic	TP53	TP53:NM_000546.5:exon4:c.500_502del:p.K167del	chr2:g.500_502del
