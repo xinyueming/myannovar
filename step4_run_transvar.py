@@ -5,12 +5,17 @@ Calls: transvar ganno -l transvar.input --refseq > transvar.output
 """
 
 import sys
+import shutil
 import argparse
 import subprocess
 from pathlib import Path
+from typing import Optional
 
 
-def process(input_path: str, output_path: str | None = None, refseq: bool = True) -> None:
+def process(input_path: str, output_path: Optional[str] = None, refseq: bool = True) -> None:
+    if not shutil.which("transvar"):
+        sys.exit("Error: transvar not found. Install: pip install transvar")
+
     if not Path(input_path).is_file():
         sys.exit(f"Error: {input_path} not found")
 
