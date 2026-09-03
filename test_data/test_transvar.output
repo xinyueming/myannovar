@@ -1,0 +1,4 @@
+chr3:g.178936091_178936091delinsA	NM_006218.2	PIK3CA	+	chr3:g.178936091G>A/c.1633G>A/p.E545K	inside_[cds_in_exon_10]	CSQN=Missense
+chr3:g.178936091_178936091delinsA	NM_006218.3	PIK3CA	+	chr3:g.178936091G>A/c.1633G>A/p.E545K	inside_[cds_in_exon_10]	CSQN=Missense
+chr1:g.100_100insA	NM_001234.5	BRCA1	-	chr1:g.100_100insA/c.100_101insA/p.X100X	inside_[cds_in_exon_2]	CSQN=Frameshift
+chr1:g.100_102del	NM_005678.1	TP53	+	chr1:g.100_102del/c.100_102del/p.G34del	inside_[intron_between_exon_2_and_3]	CSQN=Intronic
