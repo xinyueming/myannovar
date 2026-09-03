@@ -1,0 +1,3 @@
+transvar.input	AAChange.transvar
+chr3:g.178936091_178936091delinsA	PIK3CA:NM_006218.2:exon10:c.1633G>A:p.E545K,PIK3CA:NM_006218.3:exon10:c.1633G>A:p.E545K
+chr1:g.100_100insA	BRCA1:NM_001234.5:exon2:c.100_101insA:p.X100X
