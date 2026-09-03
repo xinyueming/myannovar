@@ -8,7 +8,7 @@ column with the AAChange.transvar value from transvar.multianno.
 import sys
 import argparse
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List
 
 
 def load_multianno(path: str) -> Dict[str, str]:
@@ -53,7 +53,7 @@ def process(
     tv_lookup = load_multianno(transvar_multianno_path)
 
     lines = Path(multianno_path).read_text().splitlines()
-    out_lines: list[str] = []
+    out_lines: List[str] = []
 
     tv_col: Optional[int] = None
     aachange_col: Optional[int] = None
