@@ -10,7 +10,7 @@ import sys
 import argparse
 from collections import OrderedDict
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 
 _REGION_EXON_RE = re.compile(r"exon_(\d+)")
@@ -68,7 +68,7 @@ def process(input_path: str, output_path: Optional[str] = None) -> None:
         sys.exit(f"Error: output directory {out_dir} does not exist")
 
     # Group by input, preserving order
-    groups: OrderedDict[str, list[str]] = OrderedDict()
+    groups: OrderedDict[str, List[str]] = OrderedDict()
 
     for line in Path(input_path).read_text().splitlines():
         stripped = line.rstrip()
