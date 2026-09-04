@@ -18,10 +18,18 @@ pip install -e .
 
 ```bash
 # One-command annotation (ANNOVAR + TransVar)
-myannovar run -i input.vcf -o result.vcf --db refGene --build hg38
+myannovar run -i input.vcf -o result.vcf \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer" \
+  --operation "g" \
+  --argument "'-hgvs'"
 
 # Step-by-step: ANNOVAR only
-myannovar annovar -i input.vcf -o sample --db refGene --build hg38
+myannovar annovar -i input.vcf -o sample.var \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer" \
+  --operation "g" \
+  --argument "'-hgvs'"
 
 # Step-by-step: TransVar annotation
 myannovar annotate -i sample.avinput -m sample_multianno.txt -o result.vcf
@@ -34,15 +42,22 @@ myannovar annotate -i sample.avinput -m sample_multianno.txt -o result.vcf
 Run the complete ANNOVAR + TransVar pipeline in one command.
 
 ```bash
-myannovar run -i input.vcf -o result.vcf --db refGene --db avsnp150 --build hg38
+myannovar run -i input.vcf -o result.vcf \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer,cytoBand,clinvar_20220320" \
+  --operation "g,r,f,f,f" \
+  --argument "'-hgvs',,,"
 ```
 
 | Option | Description |
 |--------|-------------|
 | `-i, --input` | Input VCF file |
 | `-o, --output` | Output VCF file |
-| `-d, --db` | Annotation database (can be specified multiple times) |
+| `--humandb` | ANNOVAR human database directory |
 | `-b, --build` | Genome build (default: hg38) |
+| `--protocol` | Protocol string (e.g. refGeneWithVer,cytoBand) |
+| `--operation` | Operation string (e.g. g,r,f) |
+| `--argument` | Argument string (e.g. '-hgvs',,) |
 | `--annovar-dir` | ANNOVAR scripts directory (optional, auto-detected) |
 | `--keep-temp` | Keep intermediate files |
 | `--refseq / --no-refseq` | Enable/disable RefSeq annotations |
@@ -53,8 +68,24 @@ myannovar run -i input.vcf -o result.vcf --db refGene --db avsnp150 --build hg38
 Run ANNOVAR table_annovar.pl only. Produces `.avinput` and `_multianno.txt`.
 
 ```bash
-myannovar annovar -i input.vcf -o sample --db refGene --build hg38
+myannovar annovar -i input.vcf -o sample.var \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer,cytoBand,clinvar_20220320" \
+  --operation "g,r,f,f,f" \
+  --argument "'-hgvs',,,"
 ```
+
+| Option | Description |
+|--------|-------------|
+| `-i, --input` | Input VCF file |
+| `-o, --output` | Output prefix (e.g. sample.var) |
+| `--humandb` | ANNOVAR human database directory |
+| `-b, --build` | Genome build (default: hg38) |
+| `--protocol` | Protocol string (e.g. refGeneWithVer,cytoBand) |
+| `--operation` | Operation string (e.g. g,r,f) |
+| `--argument` | Argument string (e.g. '-hgvs',,) |
+| `--annovar-dir` | ANNOVAR scripts directory (optional) |
+| `-v, --verbose` | Verbose output |
 
 ### `myannovar annotate`
 
@@ -63,6 +94,15 @@ Run the TransVar 7-step annotation pipeline on existing ANNOVAR output.
 ```bash
 myannovar annotate -i sample.avinput -m sample_multianno.txt -o result.vcf
 ```
+
+| Option | Description |
+|--------|-------------|
+| `-i, --input` | Input .avinput file |
+| `-m, --multianno` | Input _multianno.txt file |
+| `-o, --output` | Output VCF file |
+| `--keep-temp` | Keep intermediate files |
+| `--refseq / --no-refseq` | Enable/disable RefSeq annotations |
+| `-v, --verbose` | Verbose output |
 
 ## Pipeline Steps
 
@@ -115,16 +155,35 @@ The pipeline auto-detects ANNOVAR scripts in this order:
 
 ```bash
 # Multiple databases
-myannovar run -i sample.vcf -o result.vcf -d refGene -d avsnp150 -d gnomad_genome
+myannovar run -i sample.vcf -o result.vcf \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer,cytoBand,gnomad_genome" \
+  --operation "g,r,f" \
+  --argument "'-hgvs',,"
 
 # Use hg19 build
-myannovar run -i sample.vcf -o result.vcf -d refGene -b hg19
+myannovar run -i sample.vcf -o result.vcf \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer" \
+  --operation "g" \
+  --argument "'-hgvs'" \
+  -b hg19
 
 # Keep intermediate files for debugging
-myannovar run -i sample.vcf -o result.vcf -d refGene --keep-temp
+myannovar run -i sample.vcf -o result.vcf \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer" \
+  --operation "g" \
+  --argument "'-hgvs'" \
+  --keep-temp
 
 # Verbose logging
-myannovar run -i sample.vcf -o result.vcf -d refGene -v
+myannovar run -i sample.vcf -o result.vcf \
+  --humandb /path/to/humandb \
+  --protocol "refGeneWithVer" \
+  --operation "g" \
+  --argument "'-hgvs'" \
+  -v
 ```
 
 ## Troubleshooting
@@ -142,16 +201,58 @@ myannovar run -i sample.vcf -o result.vcf -d refGene -v
 ```python
 from myannovar.annovar import AnnovarRunner
 from myannovar.pipeline import Pipeline
-from myannovar.steps import step1_process, step7_process
+from myannovar.steps.step1 import process as step1_process
 
 # Use AnnovarRunner directly
 runner = AnnovarRunner()
-result = runner.run("input.vcf", "sample", ["refGene"], "hg38")
+result = runner.run(
+    input_file="input.vcf",
+    output_prefix="sample",
+    build="hg38",
+    humandb="/path/to/humandb",
+    protocol="refGeneWithVer",
+    operation="g",
+    argument="'-hgvs'",
+)
 
 # Use Pipeline for full orchestration
 pipeline = Pipeline(keep_temp=False)
-pipeline.run_full("input.vcf", "result.vcf", ["refGene"], "hg38")
+pipeline.run_full(
+    input_vcf="input.vcf",
+    output_vcf="result.vcf",
+    build="hg38",
+    humandb="/path/to/humandb",
+    protocol="refGeneWithVer",
+    operation="g",
+    argument="'-hgvs'",
+)
 
 # Use individual steps
 step1_process("input.avinput", "output.avinput")
 ```
+
+## Project Structure
+
+```
+myannovar/
+├── pyproject.toml
+├── README.md
+├── src/
+│   └── myannovar/
+│       ├── __init__.py
+│       ├── annovar.py          # AnnovarRunner
+│       ├── cli.py              # CLI entry point
+│       ├── pipeline.py         # Pipeline orchestration
+│       ├── logging_config.py
+│       ├── steps/              # TransVar steps
+│       │   ├── step1.py
+│       │   ├── step2.py
+│       │   └── ...
+│       └── annovar_scripts/    # ANNOVAR Perl scripts
+├── tests/
+└── test_data/
+```
+
+## License
+
+MIT
