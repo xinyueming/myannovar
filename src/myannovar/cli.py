@@ -23,12 +23,12 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Run ANNOVAR table_annovar.pl",
     )
     p_annovar.add_argument("-i", "--input", required=True, help="Input VCF file")
-    p_annovar.add_argument("-o", "--output", required=True, help="Output prefix")
-    p_annovar.add_argument(
-        "-d", "--db", required=True, action="append",
-        help="Annotation database (can be specified multiple times)",
-    )
+    p_annovar.add_argument("-o", "--output", required=True, help="Output prefix (e.g. sample.var)")
+    p_annovar.add_argument("--humandb", required=True, help="Human database directory")
     p_annovar.add_argument("-b", "--build", default="hg38", help="Genome build (default: hg38)")
+    p_annovar.add_argument("--protocol", required=True, help="Protocol (e.g. refGeneWithVer,cytoBand,clinvar_20220320)")
+    p_annovar.add_argument("--operation", required=True, help="Operation (e.g. g,r,f,f,f)")
+    p_annovar.add_argument("--argument", required=True, help="Argument (e.g. '-hgvs',,,)")
     p_annovar.add_argument("--annovar-dir", help="ANNOVAR scripts directory")
     p_annovar.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
     p_annovar.set_defaults(func=_cmd_annovar)
@@ -63,11 +63,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument("-i", "--input", required=True, help="Input VCF file")
     p_run.add_argument("-o", "--output", required=True, help="Output VCF file")
-    p_run.add_argument(
-        "-d", "--db", required=True, action="append",
-        help="Annotation database (can be specified multiple times)",
-    )
+    p_run.add_argument("--humandb", required=True, help="Human database directory")
     p_run.add_argument("-b", "--build", default="hg38", help="Genome build (default: hg38)")
+    p_run.add_argument("--protocol", required=True, help="Protocol (e.g. refGeneWithVer,cytoBand)")
+    p_run.add_argument("--operation", required=True, help="Operation (e.g. g,r,f)")
+    p_run.add_argument("--argument", required=True, help="Argument (e.g. '-hgvs',,)")
     p_run.add_argument("--annovar-dir", help="ANNOVAR scripts directory")
     p_run.add_argument(
         "--keep-temp", action="store_true",
@@ -98,8 +98,11 @@ def _cmd_annovar(args: argparse.Namespace) -> None:
     result = runner.run(
         input_file=args.input,
         output_prefix=args.output,
-        db_names=args.db,
         build=args.build,
+        humandb=args.humandb,
+        protocol=args.protocol,
+        operation=args.operation,
+        argument=args.argument,
     )
     logger.info("avinput:  %s", result["avinput"])
     logger.info("multianno: %s", result["multianno"])
@@ -136,8 +139,11 @@ def _cmd_run(args: argparse.Namespace) -> None:
     output = pipeline.run_full(
         input_vcf=args.input,
         output_vcf=args.output,
-        db=args.db,
         build=args.build,
+        humandb=args.humandb,
+        protocol=args.protocol,
+        operation=args.operation,
+        argument=args.argument,
         refseq=refseq,
     )
     logger.info("Pipeline complete: %s", output)

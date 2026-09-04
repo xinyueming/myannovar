@@ -3,6 +3,13 @@
 import pytest
 from myannovar.cli import _build_parser
 
+_COMMON = [
+    "--humandb", "/data/humandb",
+    "--protocol", "refGene,avsnp150",
+    "--operation", "g,f",
+    "--argument", "'-hgvs',",
+]
+
 
 class TestParser:
     """Test CLI argument parsing."""
@@ -14,36 +21,31 @@ class TestParser:
 
     def test_annovar_required_args(self):
         args = self.parser.parse_args([
-            "annovar", "-i", "input.vcf", "-o", "sample",
-            "-d", "refGene",
-        ])
+            "annovar", "-i", "input.vcf", "-o", "sample.var",
+        ] + _COMMON)
         assert args.command == "annovar"
         assert args.input == "input.vcf"
-        assert args.output == "sample"
-        assert args.db == ["refGene"]
+        assert args.output == "sample.var"
+        assert args.humandb == "/data/humandb"
+        assert args.protocol == "refGene,avsnp150"
+        assert args.operation == "g,f"
+        assert args.argument == "'-hgvs',"
         assert args.build == "hg38"
         assert args.annovar_dir is None
         assert not args.verbose
 
-    def test_annovar_multiple_dbs(self):
-        args = self.parser.parse_args([
-            "annovar", "-i", "input.vcf", "-o", "sample",
-            "-d", "refGene", "-d", "avsnp150",
-        ])
-        assert args.db == ["refGene", "avsnp150"]
-
     def test_annovar_build(self):
         args = self.parser.parse_args([
-            "annovar", "-i", "input.vcf", "-o", "sample",
-            "-d", "refGene", "-b", "hg19",
-        ])
+            "annovar", "-i", "input.vcf", "-o", "sample.var",
+            "-b", "hg19",
+        ] + _COMMON)
         assert args.build == "hg19"
 
     def test_annovar_verbose(self):
         args = self.parser.parse_args([
-            "annovar", "-i", "input.vcf", "-o", "sample",
-            "-d", "refGene", "-v",
-        ])
+            "annovar", "-i", "input.vcf", "-o", "sample.var",
+            "-v",
+        ] + _COMMON)
         assert args.verbose
 
     # -- annotate subcommand -------------------------------------------
@@ -79,12 +81,14 @@ class TestParser:
     def test_run_required_args(self):
         args = self.parser.parse_args([
             "run", "-i", "input.vcf", "-o", "result.vcf",
-            "-d", "refGene",
-        ])
+        ] + _COMMON)
         assert args.command == "run"
         assert args.input == "input.vcf"
         assert args.output == "result.vcf"
-        assert args.db == ["refGene"]
+        assert args.humandb == "/data/humandb"
+        assert args.protocol == "refGene,avsnp150"
+        assert args.operation == "g,f"
+        assert args.argument == "'-hgvs',"
         assert args.build == "hg38"
         assert not args.keep_temp
         assert args.refseq is True
@@ -92,12 +96,17 @@ class TestParser:
     def test_run_all_args(self):
         args = self.parser.parse_args([
             "run", "-i", "input.vcf", "-o", "result.vcf",
-            "-d", "refGene", "-d", "avsnp150",
-            "-b", "hg19", "--annovar-dir", "/opt/annovar",
+            "-b", "hg19", "--humandb", "/data/humandb",
+            "--protocol", "db1,db2", "--operation", "g,r",
+            "--argument", "'-hgvs',",
+            "--annovar-dir", "/opt/annovar",
             "--keep-temp", "--no-refseq", "-v",
         ])
-        assert args.db == ["refGene", "avsnp150"]
         assert args.build == "hg19"
+        assert args.humandb == "/data/humandb"
+        assert args.protocol == "db1,db2"
+        assert args.operation == "g,r"
+        assert args.argument == "'-hgvs',"
         assert args.annovar_dir == "/opt/annovar"
         assert args.keep_temp
         assert args.no_refseq

@@ -56,13 +56,27 @@ class AnnovarRunner:
         self,
         input_file: str,
         output_prefix: str,
-        db_names: List[str],
-        build: str = "hg38",
-        protocol: Optional[str] = None,
-        operation: Optional[str] = None,
+        build: str,
+        humandb: str,
+        protocol: str,
+        operation: str,
+        argument: str,
         other_args: Optional[List[str]] = None,
     ) -> Dict[str, str]:
         """Run table_annovar.pl and return paths to output files.
+
+        Args:
+            input_file: input VCF file path
+            output_prefix: output file prefix (e.g. "sample.var")
+            build: genome build version (hg19/hg38)
+            humandb: human database directory path
+            protocol: comma-separated protocol string
+                      (e.g. "refGeneWithVer,cytoBand,clinvar_20220320")
+            operation: comma-separated operation string
+                       (e.g. "g,r,f,f,f")
+            argument: comma-separated argument string
+                      (e.g. "'-hgvs',,,")
+            other_args: additional arguments to append
 
         Returns:
             {"avinput": str, "multianno": str}
@@ -79,15 +93,16 @@ class AnnovarRunner:
             "perl",
             str(script),
             str(input_file),
+            str(humandb),
             "-buildver", build,
             "-out", output_prefix,
-            "-protocol", ",".join(db_names) if protocol is None else protocol,
-            "-operation", ",".join(["g"] * len(db_names)) if operation is None else operation,
+            "-remove",
+            "-protocol", protocol,
+            "-operation", operation,
             "-nastring", ".",
-            "-csvlog",
-            "-polish",
-            "-xref",
-            "-arg", ",".join(["-hgvs"] * len(db_names)),
+            "-vcfinput",
+            "--polish",
+            "--argument", argument,
         ]
 
         if other_args:

@@ -46,20 +46,26 @@ class Pipeline:
         self,
         input_vcf: str,
         output_prefix: str,
-        db: List[str],
-        build: str = "hg38",
+        build: str,
+        humandb: str,
+        protocol: str,
+        operation: str,
+        argument: str,
     ) -> dict:
         """Run ANNOVAR annotation.
 
         Returns dict with ``avinput`` and ``multianno`` paths.
         """
-        logger.info("Running ANNOVAR: %s (build=%s, db=%s)", input_vcf, build, db)
+        logger.info("Running ANNOVAR: %s (build=%s, protocol=%s)", input_vcf, build, protocol)
         runner = AnnovarRunner(annovar_dir=self._annovar_dir)
         result = runner.run(
             input_file=input_vcf,
             output_prefix=output_prefix,
-            db_names=db,
             build=build,
+            humandb=humandb,
+            protocol=protocol,
+            operation=operation,
+            argument=argument,
         )
         logger.info("ANNOVAR output: avinput=%s, multianno=%s", result["avinput"], result["multianno"])
         return result
@@ -85,7 +91,7 @@ class Pipeline:
         logger.info("Starting TransVar pipeline (%d steps)", len(_STEP_NAMES))
         workdir = Path(avinput).resolve().parent
 
-        for step_num, (step_fn, args) in enumerate(
+        for step_num, (step_fn, step_args) in enumerate(
             [
                 (step1_process, (avinput, str(workdir / "step1.avinput"))),
                 (step2_process, (str(workdir / "step1.avinput"), multianno, str(workdir / "step2_multianno.txt"))),
@@ -99,9 +105,9 @@ class Pipeline:
         ):
             name = _STEP_NAMES[step_num]
             logger.info("Step %d: %s", step_num, name)
-            out_path = args[-1] if isinstance(args[-1], str) else str(args[-1])
+            out_path = step_args[-1] if isinstance(step_args[-1], str) else str(step_args[-1])
             self._track(out_path)
-            step_fn(*args)
+            step_fn(*step_args)
 
         if not self.keep_temp:
             logger.debug("Cleaning up %d intermediate files", len(self._temp_files))
@@ -114,8 +120,11 @@ class Pipeline:
         self,
         input_vcf: str,
         output_vcf: str,
-        db: List[str],
-        build: str = "hg38",
+        build: str,
+        humandb: str,
+        protocol: str,
+        operation: str,
+        argument: str,
         refseq: bool = True,
     ) -> str:
         """Run complete ANNOVAR + TransVar pipeline.
@@ -123,8 +132,11 @@ class Pipeline:
         Args:
             input_vcf: input VCF file
             output_vcf: output VCF file
-            db: annotation databases
             build: genome build
+            humandb: human database directory
+            protocol: comma-separated protocol string
+            operation: comma-separated operation string
+            argument: comma-separated argument string
             refseq: whether to use RefSeq
 
         Returns:
@@ -136,7 +148,10 @@ class Pipeline:
         multianno_path = str(Path(input_vcf).parent / f"{output_prefix}_multianno.txt")
 
         # Phase 1: ANNOVAR
-        self.run_annovar(input_vcf, output_prefix, db, build)
+        self.run_annovar(
+            input_vcf, output_prefix, build, humandb,
+            protocol, operation, argument,
+        )
 
         # Phase 2: TransVar
         self.run_transvar(avinput_path, multianno_path, output_vcf, refseq)

@@ -6,6 +6,14 @@ from unittest.mock import patch, MagicMock
 
 from myannovar.pipeline import Pipeline
 
+_ANNOVAR_KW = {
+    "build": "hg38",
+    "humandb": "/data/humandb",
+    "protocol": "refGene,avsnp150",
+    "operation": "g,f",
+    "argument": "'-hgvs',",
+}
+
 
 class TestPipelineInit:
     """Test Pipeline initialization."""
@@ -74,7 +82,6 @@ class TestPipelineRunTransvar:
         result = p.run_transvar(avinput, multianno, output)
 
         assert result == output
-        # Verify all 7 steps were called
         s1.assert_called_once()
         s2.assert_called_once()
         s3.assert_called_once()
@@ -82,3 +89,46 @@ class TestPipelineRunTransvar:
         s5.assert_called_once()
         s6.assert_called_once()
         s7.assert_called_once()
+
+
+class TestPipelineRunFull:
+    """Test run_full with mocked AnnovarRunner and steps."""
+
+    @patch("myannovar.pipeline.step1_process")
+    @patch("myannovar.pipeline.step2_process")
+    @patch("myannovar.pipeline.step3_process")
+    @patch("myannovar.pipeline.step4_process")
+    @patch("myannovar.pipeline.step5_process")
+    @patch("myannovar.pipeline.step6_process")
+    @patch("myannovar.pipeline.step7_process")
+    @patch("myannovar.pipeline.AnnovarRunner")
+    def test_run_full_calls_annovar_and_steps(
+        self, MockRunner, s7, s6, s5, s4, s3, s2, s1, tmp_path: Path
+    ):
+        input_vcf = str(tmp_path / "input.vcf")
+        output_vcf = str(tmp_path / "result.vcf")
+
+        # Create input VCF
+        Path(input_vcf).write_text("##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\nchr1\t100\t.\tA\tT\n")
+
+        # Mock AnnovarRunner to create expected output files
+        mock_runner = MagicMock()
+        MockRunner.return_value = mock_runner
+        mock_runner.run.return_value = {
+            "avinput": str(tmp_path / "result.avinput"),
+            "multianno": str(tmp_path / "result_multianno.txt"),
+        }
+
+        # Create ANNOVAR output files
+        (tmp_path / "result.avinput").write_text("chr1\t100\t100\tA\tT\t-\n")
+        (tmp_path / "result_multianno.txt").write_text(
+            "#Chr\tStart\tEnd\tRef\tAlt\ttransvar.input\nchr1\t100\t100\tA\tT\t-\n"
+        )
+
+        p = Pipeline(workdir=tmp_path, keep_temp=True)
+        result = p.run_full(
+            input_vcf, output_vcf, **_ANNOVAR_KW,
+        )
+
+        assert result == output_vcf
+        mock_runner.run.assert_called_once()
