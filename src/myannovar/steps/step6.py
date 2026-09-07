@@ -66,22 +66,19 @@ def process(
             out_lines.append(stripped)
             continue
 
-        if stripped.startswith("#"):
+        # Detect header line (may not have # prefix in ANNOVAR multianno)
+        if tv_col is None or aachange_col is None:
             fields = stripped.split("\t")
-            # Find transvar.input column
-            if tv_col is None:
-                tv_col = find_column_index(fields, "transvar.input")
-            # Find AAChange column to replace
-            if aachange_col is None:
-                aachange_col = find_column_index(
-                    fields, "AAChange.refGeneWithVer", "AAChange.refGene"
-                )
-            # Add transvar.input header if missing
-            if tv_col is not None and tv_col >= len(fields):
-                out_lines.append(f"{stripped}\ttransvar.input")
+            first = fields[0].lstrip("#").strip()
+            if first == "Chr" or first.lower() == "chr" or stripped.startswith("#"):
+                if tv_col is None:
+                    tv_col = find_column_index(fields, "transvar.input")
+                if aachange_col is None:
+                    aachange_col = find_column_index(
+                        fields, "AAChange.refGeneWithVer", "AAChange.refGene"
+                    )
+                out_lines.append(stripped)
                 continue
-            out_lines.append(stripped)
-            continue
 
         fields = stripped.split("\t")
         if tv_col is None or aachange_col is None:

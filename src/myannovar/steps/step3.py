@@ -27,17 +27,17 @@ def process(input_path: str, output_path: Optional[str] = None) -> None:
 
     for line in lines:
         stripped = line.rstrip()
-        if not stripped or stripped.startswith("#"):
-            # Check if this is the header line with column names
+        if not stripped:
+            continue
+
+        # Detect header line (may not have # prefix in ANNOVAR multianno)
+        if tv_col is None:
             fields = stripped.split("\t")
             for i, f in enumerate(fields):
                 if f.strip() == "transvar.input":
                     tv_col = i
                     break
-            continue
-
-        if tv_col is None:
-            continue
+            continue  # skip header after checking
 
         fields = stripped.split("\t")
         if tv_col < len(fields):

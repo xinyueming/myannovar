@@ -24,7 +24,7 @@ def load_avinput(avinput_path: str) -> Dict[_Key, str]:
         if len(fields) < 6:
             continue
         key = (fields[0], fields[1], fields[2], fields[3], fields[4])
-        lookup[key] = fields[5]
+        lookup[key] = fields[-1]  # transvar.input is the last column (added by step1)
     return lookup
 
 
@@ -58,26 +58,22 @@ def process(
             out_lines.append(stripped)
             continue
 
-        # Handle comment/header lines — pass through
+        # Comment lines — pass through
         if stripped.startswith("#"):
-            # Find the last header line (column names)
-            if header_added:
-                out_lines.append(stripped)
-                continue
+            out_lines.append(stripped)
+            continue
 
-            # This is likely the column header line
+        # Detect header line (may not have # prefix in ANNOVAR multianno)
+        if not header_added:
             fields = stripped.split("\t")
-            # Detect if this looks like a multianno header
-            first = fields[0].lstrip("#").strip()
+            first = fields[0].strip()
             if first == "Chr" or first.lower() == "chr":
                 out_lines.append(f"{stripped}\ttransvar.input")
                 header_added = True
-            else:
-                out_lines.append(stripped)
-            continue
+                continue
 
+        # Data row
         fields = stripped.split("\t")
-        # Multianno columns: Chr(0), Start(1), End(2), Ref(3), Alt(4), ...
         if len(fields) >= 5:
             key = (fields[0], fields[1], fields[2], fields[3], fields[4])
             tv = lookup.get(key, "-")
