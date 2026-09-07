@@ -119,7 +119,7 @@ class AnnovarRunner:
 
         workdir = Path(input_file).resolve().parent
         avinput = workdir / f"{output_prefix}.avinput"
-        multianno = workdir / f"{output_prefix}_multianno.txt"
+        multianno = workdir / f"{output_prefix}.{build}_multianno.txt"
 
         logger.info("ANNOVAR complete: avinput=%s, multianno=%s", avinput, multianno)
 
