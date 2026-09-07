@@ -77,7 +77,15 @@ def process(
                     aachange_col = find_column_index(
                         fields, "AAChange.refGeneWithVer", "AAChange.refGene"
                     )
-                out_lines.append(stripped)
+                # Remove transvar.input column from header
+                if tv_col is not None:
+                    fields.pop(tv_col)
+                    # After removal, aachange_col may shift
+                    if aachange_col > tv_col:
+                        aachange_col -= 1
+                    out_lines.append("\t".join(fields))
+                else:
+                    out_lines.append(stripped)
                 continue
 
         fields = stripped.split("\t")
@@ -86,6 +94,7 @@ def process(
             unchanged += 1
             continue
 
+        # Replace AAChange if transvar annotation exists
         if tv_col < len(fields):
             tv_input = fields[tv_col]
             replacement = tv_lookup.get(tv_input)
@@ -96,6 +105,10 @@ def process(
                 unchanged += 1
         else:
             unchanged += 1
+
+        # Remove transvar.input column
+        if tv_col is not None and tv_col < len(fields):
+            fields.pop(tv_col)
 
         out_lines.append("\t".join(fields))
 

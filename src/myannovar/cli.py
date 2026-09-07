@@ -41,6 +41,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_annotate.add_argument("-i", "--input", required=True, help="Input .avinput file")
     p_annotate.add_argument("-m", "--multianno", required=True, help="Input _multianno.txt file")
     p_annotate.add_argument("-o", "--output", required=True, help="Output VCF file")
+    p_annotate.add_argument("--input-vcf", help="Original input VCF (for polished VCF output)")
     p_annotate.add_argument(
         "--keep-temp", action="store_true",
         help="Keep intermediate files",
@@ -122,6 +123,7 @@ def _cmd_annotate(args: argparse.Namespace) -> None:
         multianno=args.multianno,
         output=args.output,
         refseq=refseq,
+        original_vcf=getattr(args, "input_vcf", None),
     )
     logger.info("Annotation complete: %s", output)
 
