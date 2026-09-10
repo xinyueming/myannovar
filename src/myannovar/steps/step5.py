@@ -15,6 +15,7 @@ from typing import List, Optional
 
 _REGION_EXON_RE = re.compile(r"exon_(\d+)")
 _REGION_INTRON_RE = re.compile(r"intron_between_exon_(\d+)_and_(\d+)")
+_TRANSCRIPT_CLEAN = re.compile(r"\s*\([^)]*\)$")
 _COORD_SEP = "/"
 
 
@@ -80,7 +81,8 @@ def process(input_path: str, output_path: Optional[str] = None) -> None:
 
         region = parse_region(parsed["region"])
         cDNA, protein = parse_coordinates(parsed["coordinates"])
-        entry = f"{parsed['gene']}:{parsed['transcript']}:{region}:{cDNA}:{protein}"
+        transcript = _TRANSCRIPT_CLEAN.sub("", parsed["transcript"])
+        entry = f"{parsed['gene']}:{transcript}:{region}:{cDNA}:{protein}"
 
         key = parsed["input"]
         if key not in groups:
