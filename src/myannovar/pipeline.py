@@ -77,6 +77,7 @@ class Pipeline:
         output: str,
         refseq: bool = True,
         original_vcf: Optional[str] = None,
+        build: Optional[str] = None,
     ) -> str:
         """Run TransVar 7-step annotation pipeline.
 
@@ -86,6 +87,7 @@ class Pipeline:
             output: output VCF path
             refseq: whether to use --refseq for TransVar
             original_vcf: original input VCF (for polished VCF output)
+            build: genome build for TransVar --refversion
 
         Returns:
             Path to the output VCF file.
@@ -98,7 +100,7 @@ class Pipeline:
                 (step1_process, (avinput, str(workdir / "step1.avinput"))),
                 (step2_process, (str(workdir / "step1.avinput"), multianno, str(workdir / "step2_multianno.txt"))),
                 (step3_process, (str(workdir / "step2_multianno.txt"), str(workdir / "transvar.input"))),
-                (step4_process, (str(workdir / "transvar.input"), str(workdir / "transvar.output"), refseq)),
+                (step4_process, (str(workdir / "transvar.input"), str(workdir / "transvar.output"), refseq, build)),
                 (step5_process, (str(workdir / "transvar.output"), str(workdir / "transvar.multianno"))),
                 (step6_process, (str(workdir / "step2_multianno.txt"), str(workdir / "transvar.multianno"), str(workdir / "step6_multianno.txt"))),
                 (step7_process, (str(workdir / "step6_multianno.txt"), original_vcf or avinput, output)),
@@ -156,7 +158,7 @@ class Pipeline:
         )
 
         # Phase 2: TransVar
-        self.run_transvar(avinput_path, multianno_path, output_vcf, refseq, input_vcf)
+        self.run_transvar(avinput_path, multianno_path, output_vcf, refseq, input_vcf, build)
 
         if not self.keep_temp:
             self._cleanup()

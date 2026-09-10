@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 
-def process(input_path: str, output_path: Optional[str] = None, refseq: bool = True) -> None:
+def process(input_path: str, output_path: Optional[str] = None, refseq: bool = True, refversion: Optional[str] = None) -> None:
     if not shutil.which("transvar"):
         sys.exit("Error: transvar not found. Install: pip install transvar")
 
@@ -31,6 +31,8 @@ def process(input_path: str, output_path: Optional[str] = None, refseq: bool = T
     cmd = ["transvar", "ganno", "-l", input_path]
     if refseq:
         cmd.append("--refseq")
+    if refversion:
+        cmd.extend(["--refversion", refversion])
 
     print(f"Running: {' '.join(cmd)}")
 
@@ -49,8 +51,9 @@ def main():
     parser.add_argument("input", help="Input transvar.input file")
     parser.add_argument("-o", "--output", help="Output file (default: transvar.output next to input)")
     parser.add_argument("--no-refseq", action="store_true", help="Skip --refseq flag")
+    parser.add_argument("--refversion", help="Reference genome version (e.g. hg19, hg38)")
     args = parser.parse_args()
-    process(args.input, args.output, refseq=not args.no_refseq)
+    process(args.input, args.output, refseq=not args.no_refseq, refversion=args.refversion)
 
 
 if __name__ == "__main__":
