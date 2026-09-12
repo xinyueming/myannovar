@@ -51,6 +51,7 @@ class Pipeline:
         protocol: str,
         operation: str,
         argument: str,
+        polish: bool = True,
     ) -> dict:
         """Run ANNOVAR annotation.
 
@@ -66,6 +67,7 @@ class Pipeline:
             protocol=protocol,
             operation=operation,
             argument=argument,
+            polish=polish,
         )
         logger.info("ANNOVAR output: avinput=%s, multianno=%s", result["avinput"], result["multianno"])
         return result
@@ -130,6 +132,7 @@ class Pipeline:
         operation: str,
         argument: str,
         refseq: bool = True,
+        polish: bool = True,
     ) -> str:
         """Run complete ANNOVAR + TransVar pipeline.
 
@@ -154,7 +157,7 @@ class Pipeline:
         # Phase 1: ANNOVAR
         self.run_annovar(
             input_vcf, output_prefix, build, humandb,
-            protocol, operation, argument,
+            protocol, operation, argument, polish,
         )
 
         # Phase 2: TransVar

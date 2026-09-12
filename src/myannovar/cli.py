@@ -31,6 +31,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_annovar.add_argument("--argument", required=True, help="Argument (e.g. '-hgvs',,,)")
     p_annovar.add_argument("--annovar-dir", help="ANNOVAR scripts directory")
     p_annovar.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    p_annovar.add_argument(
+        "--polish", action="store_true", default=True,
+        help="Polish protein notation for indels (default: enabled)",
+    )
+    p_annovar.add_argument(
+        "--no-polish", action="store_true",
+        help="Disable protein notation polishing",
+    )
     p_annovar.set_defaults(func=_cmd_annovar)
 
     # -- annotate ------------------------------------------------------
@@ -84,6 +92,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Disable RefSeq annotations",
     )
     p_run.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    p_run.add_argument(
+        "--polish", action="store_true", default=True,
+        help="Polish protein notation for indels (default: enabled)",
+    )
+    p_run.add_argument(
+        "--no-polish", action="store_true",
+        help="Disable protein notation polishing",
+    )
     p_run.set_defaults(func=_cmd_run)
 
     return parser
@@ -95,6 +111,7 @@ def _cmd_annovar(args: argparse.Namespace) -> None:
     setup_logging(args.verbose)
     logger = logging.getLogger(__name__)
 
+    polish = not args.no_polish
     runner = AnnovarRunner(annovar_dir=args.annovar_dir)
     logger.info("Running ANNOVAR: %s -> %s", args.input, args.output)
     result = runner.run(
@@ -105,6 +122,7 @@ def _cmd_annovar(args: argparse.Namespace) -> None:
         protocol=args.protocol,
         operation=args.operation,
         argument=args.argument,
+        polish=polish,
     )
     logger.info("avinput:  %s", result["avinput"])
     logger.info("multianno: %s", result["multianno"])
@@ -135,6 +153,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
     logger = logging.getLogger(__name__)
 
     refseq = not args.no_refseq
+    polish = not args.no_polish
     pipeline = Pipeline(
         workdir=Path(args.input).parent,
         annovar_dir=args.annovar_dir,
@@ -149,6 +168,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
         operation=args.operation,
         argument=args.argument,
         refseq=refseq,
+        polish=polish,
     )
     logger.info("Pipeline complete: %s", output)
 

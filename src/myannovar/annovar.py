@@ -62,6 +62,7 @@ class AnnovarRunner:
         operation: str,
         argument: str,
         other_args: Optional[List[str]] = None,
+        polish: bool = True,
     ) -> Dict[str, str]:
         """Run table_annovar.pl and return paths to output files.
 
@@ -101,9 +102,12 @@ class AnnovarRunner:
             "-operation", operation,
             "-nastring", ".",
             "-vcfinput",
-            "--polish",
-            "--argument", argument,
         ]
+        if polish:
+            cmd.append("--polish")
+        else:
+            cmd.append("--nopolish")
+        cmd.extend(["--argument", argument])
 
         if other_args:
             cmd.extend(other_args)
