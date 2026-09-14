@@ -90,6 +90,9 @@ class AnnovarRunner:
         if not script.is_file():
             raise FileNotFoundError(f"{script} not found")
 
+        # Strip shell quoting from argument value (subprocess doesn't need it)
+        argument = argument.replace("'", "")
+
         cmd = [
             "perl",
             str(script),
