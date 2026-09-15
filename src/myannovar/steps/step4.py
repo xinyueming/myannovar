@@ -4,10 +4,10 @@
 Calls: transvar ganno -l transvar.input --refseq > transvar.output
 """
 
-import sys
-import shutil
 import argparse
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -33,6 +33,7 @@ def process(input_path: str, output_path: Optional[str] = None, refseq: bool = T
         cmd.append("--refseq")
     if refversion:
         cmd.extend(["--refversion", refversion])
+    cmd.extend(["--gseq", "--seqmax", "-1"])
 
     print(f"Running: {' '.join(cmd)}")
 
