@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import gzip
 import re
 import sys
 from pathlib import Path
@@ -165,7 +166,11 @@ def process(
         sys.exit(f"Error: output directory {out_dir} does not exist")
 
     # 1. Read original VCF headers
-    vcf_lines = Path(original_vcf).read_text().splitlines()
+    if str(original_vcf).endswith(".gz"):
+        with gzip.open(original_vcf, "rt", encoding="utf-8") as f:
+            vcf_lines = f.read().splitlines()
+    else:
+        vcf_lines = Path(original_vcf).read_text().splitlines()
     vcf_header = [line for line in vcf_lines if line.startswith("##")]
     vcf_header_line = None
     for line in vcf_lines:
