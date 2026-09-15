@@ -151,8 +151,9 @@ class Pipeline:
         """
         logger.info("Starting full pipeline: %s -> %s", input_vcf, output_vcf)
         output_prefix = Path(output_vcf).stem
-        avinput_path = str(Path(input_vcf).parent / f"{output_prefix}.avinput")
-        multianno_path = str(Path(input_vcf).parent / f"{output_prefix}.{build}_multianno.txt")
+        cwd = Path(".").resolve()
+        avinput_path = str(cwd / f"{output_prefix}.avinput")
+        multianno_path = str(cwd / f"{output_prefix}.{build}_multianno.txt")
 
         # Phase 1: ANNOVAR
         self.run_annovar(

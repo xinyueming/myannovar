@@ -124,7 +124,7 @@ class AnnovarRunner:
                 f"table_annovar.pl failed (rc={result.returncode}):\n{result.stderr}"
             )
 
-        workdir = Path(input_file).resolve().parent
+        workdir = Path(".").resolve()
         avinput = workdir / f"{output_prefix}.avinput"
         multianno = workdir / f"{output_prefix}.{build}_multianno.txt"
 
