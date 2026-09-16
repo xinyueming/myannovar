@@ -46,7 +46,7 @@ def _skip_for_info_header(col: str) -> bool:
 
 
 def _anno_date() -> str:
-    return datetime.datetime.now(tz=datetime.UTC).date().isoformat()
+    return datetime.datetime.now(tz=datetime.timezone.utc).date().isoformat()
 
 
 def _find_otherinfo_indices(cols: list[str]) -> list[int]:
