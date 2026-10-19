@@ -106,7 +106,8 @@ while (<EVF>) {
 		} elsif ($cchange =~ m/^(\d+)_(\d+)(\w+)/) {		#non-frameshift substitution (example: c.1825_1826TT, now the ref is not included in the string)
 			($start, $end, $ref, $obs) = ($1, $2, 'REF', $3);
 		} else {
-			die "Error: invalid coding change format: <$cchange> within <$_>\n";
+			warn "WARNING: invalid coding change format: <$cchange>, skipping\n";
+			next;
 		}
 		push @queue, [$field[0], $transcript, $start, $end, $ref, $obs, $cchange, $pchange, $chr];
 		$need_trans{$transcript}++;	#this transcript is marked since we need it in reading mRNA FASTA files
