@@ -65,7 +65,7 @@ def get_chromosomes(vcf_path: str) -> list[str]:
 
 
 def _ensure_indexed(vcf_path: str) -> str:
-    """Ensure VCF is tabix-indexed. Returns index path or None."""
+    """Ensure VCF is tabix-indexed. Returns (possibly compressed and indexed) VCF path."""
     bcftools = _check_bcftools()
     path = Path(vcf_path)
 
@@ -108,6 +108,11 @@ def split_vcf(
         _run(
             [bcftools, "view", "-r", chrom, "-Oz", "-o", str(out_vcf), vcf_path],
         )
+        # Skip chromosomes with no variants (empty output file)
+        if out_vcf.stat().st_size == 0:
+            logger.warning("Chromosome %s has no variants, skipping", chrom)
+            out_vcf.unlink()
+            continue
         result[chrom] = out_vcf
         logger.info("Split %s -> %s", chrom, out_vcf)
     return result
@@ -118,8 +123,6 @@ def merge_vcfs(
     output_vcf: str,
     tmp_dir: Path,
     chroms: list[str],
-    output_prefix: str,
-    build: str,
 ) -> None:
     """Merge annotated VCFs by chromosome order using bcftools concat.
 
@@ -195,6 +198,8 @@ class SplitRunner:
         chrom_dir = chrom_vcf.parent
         logger.info("Starting annotation for %s (dir=%s)", chrom, chrom_dir)
 
+        t0 = time.time()
+
         # Chromosome-specific output filename to avoid collisions
         chrom_output = str(chrom_dir / f"{chrom}_annotated.vcf")
 
@@ -218,6 +223,9 @@ class SplitRunner:
             refseq=refseq,
             polish=polish,
         )
+
+        elapsed = time.time() - t0
+        logger.info("Chromosome %s complete (%.1fs)", chrom, elapsed)
 
         return chrom_output
 
@@ -253,6 +261,7 @@ class SplitRunner:
         """
         _check_bcftools()
         workdir = Path(input_vcf).resolve().parent
+        t_start = time.time()
 
         # Step 1: Get chromosomes
         logger.info("Scanning chromosomes from %s", input_vcf)
@@ -313,18 +322,21 @@ class SplitRunner:
                 len(errors),
                 self._tmp_dir,
             )
+            details = "; ".join(f"{c}: {e}" for c, e in errors)
             raise RuntimeError(
-                f"Annotation failed for: {', '.join(c for c, _ in errors)}"
+                f"Annotation failed for: {', '.join(c for c, _ in errors)}. "
+                f"Details: {details}"
             )
 
         # Step 5: Merge results
         logger.info("Merging %d annotated chromosomes", len(annotated))
-        merge_vcfs(input_vcf, output_vcf, self._tmp_dir, chroms, None, build)
+        merge_vcfs(input_vcf, output_vcf, self._tmp_dir, chroms)
 
         # Step 6: Cleanup
         if not self.keep_temp and self._tmp_dir:
             logger.info("Cleaning up temp directory: %s", self._tmp_dir)
             shutil.rmtree(self._tmp_dir, ignore_errors=True)
 
-        logger.info("Split pipeline complete: %s", output_vcf)
+        elapsed_total = time.time() - t_start
+        logger.info("Split pipeline complete: %s (%.1fs total)", output_vcf, elapsed_total)
         return output_vcf
