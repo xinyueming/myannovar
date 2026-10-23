@@ -170,6 +170,53 @@ class Pipeline:
         logger.info("Full pipeline complete: %s", output_vcf)
         return output_vcf
 
+    def run_split(
+        self,
+        input_vcf: str,
+        output_vcf: str,
+        jobs: int,
+        build: str,
+        humandb: str,
+        protocol: str,
+        operation: str,
+        argument: str,
+        refseq: bool = True,
+        polish: bool = True,
+    ) -> str:
+        """Run split-by-chromosome parallel annotation pipeline.
+
+        Args:
+            input_vcf: input VCF file
+            output_vcf: output VCF file
+            jobs: number of parallel jobs
+            build: genome build
+            humandb: human database directory
+            protocol: comma-separated protocol string
+            operation: comma-separated operation string
+            argument: comma-separated argument string
+            refseq: whether to use RefSeq
+            polish: whether to polish protein notation
+
+        Returns:
+            Path to the output VCF file.
+        """
+        from myannovar.split_runner import SplitRunner
+
+        logger.info("Starting split pipeline: %s -> %s (jobs=%d)", input_vcf, output_vcf, jobs)
+        runner = SplitRunner(jobs=jobs, keep_temp=self.keep_temp)
+        return runner.run(
+            input_vcf=input_vcf,
+            output_vcf=output_vcf,
+            annovar_dir=self._annovar_dir,
+            build=build,
+            humandb=humandb,
+            protocol=protocol,
+            operation=operation,
+            argument=argument,
+            refseq=refseq,
+            polish=polish,
+        )
+
     # -- internal ------------------------------------------------------
 
     def _track(self, path: str) -> None:

@@ -100,6 +100,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "--no-polish", action="store_true",
         help="Disable protein notation polishing",
     )
+    p_run.add_argument(
+        "--split", action="store_true",
+        help="Split VCF by chromosome for parallel processing",
+    )
+    p_run.add_argument(
+        "-j", "--jobs", type=int, default=1,
+        help="Number of parallel jobs (requires --split, default: 1)",
+    )
     p_run.set_defaults(func=_cmd_run)
 
     return parser
@@ -159,17 +167,32 @@ def _cmd_run(args: argparse.Namespace) -> None:
         annovar_dir=args.annovar_dir,
         keep_temp=args.keep_temp,
     )
-    output = pipeline.run_full(
-        input_vcf=args.input,
-        output_vcf=args.output,
-        build=args.build,
-        humandb=args.humandb,
-        protocol=args.protocol,
-        operation=args.operation,
-        argument=args.argument,
-        refseq=refseq,
-        polish=polish,
-    )
+
+    if args.split:
+        output = pipeline.run_split(
+            input_vcf=args.input,
+            output_vcf=args.output,
+            jobs=args.jobs,
+            build=args.build,
+            humandb=args.humandb,
+            protocol=args.protocol,
+            operation=args.operation,
+            argument=args.argument,
+            refseq=refseq,
+            polish=polish,
+        )
+    else:
+        output = pipeline.run_full(
+            input_vcf=args.input,
+            output_vcf=args.output,
+            build=args.build,
+            humandb=args.humandb,
+            protocol=args.protocol,
+            operation=args.operation,
+            argument=args.argument,
+            refseq=refseq,
+            polish=polish,
+        )
     logger.info("Pipeline complete: %s", output)
 
 
