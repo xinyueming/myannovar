@@ -178,7 +178,7 @@ def merge_multianno(tmp_dir: Path, chroms: list[str], output_path: str) -> None:
     header_written = False
     with open(output_path, "w") as out:
         for chrom in chroms:
-            chrom_step6 = tmp_dir / chrom / "step6_multianno.txt"
+            chrom_step6 = tmp_dir / chrom / f"{chrom}_annotated.txt"
             if not chrom_step6.is_file():
                 logger.warning("step6_multianno.txt not found for %s, skipping", chrom)
                 continue
