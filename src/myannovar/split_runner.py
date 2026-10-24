@@ -169,6 +169,31 @@ def merge_vcfs(
     logger.info("Merged %d chromosomes -> %s", len(chroms), output_vcf)
 
 
+def merge_multianno(tmp_dir: Path, chroms: list[str], output_path: str) -> None:
+    """Merge step6_multianno.txt from each chromosome directory.
+
+    Takes the header from the first file only, then concatenates
+    data rows from all chromosomes in order.
+    """
+    header_written = False
+    with open(output_path, "w") as out:
+        for chrom in chroms:
+            chrom_step6 = tmp_dir / chrom / "step6_multianno.txt"
+            if not chrom_step6.is_file():
+                logger.warning("step6_multianno.txt not found for %s, skipping", chrom)
+                continue
+            lines = chrom_step6.read_text().splitlines()
+            if not lines:
+                continue
+            if not header_written:
+                out.write(lines[0] + "\n")
+                header_written = True
+            for line in lines[1:]:
+                if line.strip():
+                    out.write(line + "\n")
+    logger.info("Merged step6_multianno.txt -> %s", output_path)
+
+
 class SplitRunner:
     """Split VCF by chromosome, annotate in parallel, merge results."""
 
@@ -331,6 +356,10 @@ class SplitRunner:
         # Step 5: Merge results
         logger.info("Merging %d annotated chromosomes", len(annotated))
         merge_vcfs(input_vcf, output_vcf, self._tmp_dir, chroms)
+
+        # Step 5b: Merge step6_multianno.txt from each chromosome
+        txt_output = str(Path(output_vcf).with_suffix(".txt"))
+        merge_multianno(self._tmp_dir, chroms, txt_output)
 
         # Step 6: Cleanup
         if not self.keep_temp and self._tmp_dir:
