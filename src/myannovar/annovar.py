@@ -63,6 +63,7 @@ class AnnovarRunner:
         argument: str,
         other_args: Optional[List[str]] = None,
         polish: bool = True,
+        cwd: Optional[Path] = None,
     ) -> Dict[str, str]:
         """Run table_annovar.pl and return paths to output files.
 
@@ -117,16 +118,16 @@ class AnnovarRunner:
 
         logger.debug("Running: %s", " ".join(cmd))
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
         if result.returncode != 0:
             logger.error("ANNOVAR failed: %s", result.stderr.strip())
             raise RuntimeError(
                 f"table_annovar.pl failed (rc={result.returncode}):\n{result.stderr}"
             )
 
-        workdir = Path(".").resolve()
-        avinput = workdir / f"{output_prefix}.avinput"
-        multianno = workdir / f"{output_prefix}.{build}_multianno.txt"
+        result_workdir = cwd or Path(".").resolve()
+        avinput = result_workdir / f"{output_prefix}.avinput"
+        multianno = result_workdir / f"{output_prefix}.{build}_multianno.txt"
 
         logger.info("ANNOVAR complete: avinput=%s, multianno=%s", avinput, multianno)
 

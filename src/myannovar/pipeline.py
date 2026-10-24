@@ -68,6 +68,7 @@ class Pipeline:
             operation=operation,
             argument=argument,
             polish=polish,
+            cwd=self.workdir,
         )
         logger.info("ANNOVAR output: avinput=%s, multianno=%s", result["avinput"], result["multianno"])
         return result
@@ -151,9 +152,8 @@ class Pipeline:
         """
         logger.info("Starting full pipeline: %s -> %s", input_vcf, output_vcf)
         output_prefix = Path(output_vcf).stem
-        cwd = Path(".").resolve()
-        avinput_path = str(cwd / f"{output_prefix}.avinput")
-        multianno_path = str(cwd / f"{output_prefix}.{build}_multianno.txt")
+        avinput_path = str(self.workdir / f"{output_prefix}.avinput")
+        multianno_path = str(self.workdir / f"{output_prefix}.{build}_multianno.txt")
 
         # Phase 1: ANNOVAR
         self.run_annovar(
