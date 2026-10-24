@@ -116,6 +116,14 @@ class Pipeline:
             self._track(out_path)
             step_fn(*step_args)
 
+        # Save step6_multianno.txt as .txt output before cleanup
+        step6_path = workdir / "step6_multianno.txt"
+        if step6_path.is_file():
+            txt_output = str(Path(output).with_suffix(".txt"))
+            if txt_output != str(step6_path):
+                step6_path.rename(txt_output)
+                logger.info("Step6 multianno saved to: %s", txt_output)
+
         if not self.keep_temp:
             logger.debug("Cleaning up %d intermediate files", len(self._temp_files))
             self._cleanup()
